@@ -4,6 +4,10 @@ pipeline {
     stage('build') {
       steps {
         echo 'build'
+        echo 'la construction a commencé'
+        bat 'mvn -DskipTests clean package'
+        echo 'La construction est terminé '
+        archiveArtifacts '**/target/*.jar'
       }
     }
 
@@ -11,19 +15,23 @@ pipeline {
       parallel {
         stage('test') {
           steps {
-            echo 'test'
+            echo 'smoke'
+            bat 'mvn -Dtest="com.exemple.testingweb.smoke.**" test'
+            junit '**/target/surefire-reports/TEST-*.xml'
           }
         }
 
         stage('test fonctionnel') {
           steps {
             echo 'test fonctionnel '
+            bat 'mvn -Dtest="com.example.testingweb.integration.**" test'
           }
         }
 
         stage('smoke test ') {
           steps {
             echo 'smoke test '
+            bat 'mvn -Dtest="com.example.testingweb.functional.**" test'
           }
         }
 
@@ -33,6 +41,7 @@ pipeline {
     stage('deploy') {
       steps {
         echo 'deploy'
+        bat 'mvn -DskipTests install'
       }
     }
 
